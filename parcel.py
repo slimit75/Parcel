@@ -1,5 +1,5 @@
 '''
-SimSolutions SKUFG
+SimSolutions Parcel
 
 File generator for the Skunkscraft Updater
 2024 Ian Ward
@@ -8,7 +8,7 @@ import os
 import zlib
 
 working_dir = os.curdir
-blacklist = { "README.md", "README.odt", ".git", ".github", ".idea", ".cmake", "config.cfg", "config.cfg", "cmake-build-relwithdebinfo", "cmake-build-release", "cmake-build-debug", "libs", "src", "exports.txt", "CMakeLists.txt", ".gitmodules", "DA40-XP12_prefs.txt", "DA40-XP11_prefs.txt", "skunkcrafts_updater_whitelist.txt", "skunkcrafts_updater.cfg", "skunkcrafts_updater_beta.cfg", "skunkcrafts_file_gen.py", "DA40-XP12.acf~", "DA40-XP11.acf~", "skunkcrafts_updater_sizeslist.txt", ".gitignore", "persistence.cfg" }
+blacklist = { "README.md", "README.odt", ".git", ".github", ".idea", ".cmake", "config.cfg", "config.cfg", "cmake-build-relwithdebinfo", "cmake-build-release", "cmake-build-debug", "libs", "src", "exports.txt", "CMakeLists.txt", ".gitmodules", "DA40-XP12_prefs.txt", "DA40-XP11_prefs.txt", "skunkcrafts_updater_whitelist.txt", "skunkcrafts_updater.cfg", "skunkcrafts_updater_beta.cfg", "parcel.py", "DA40-XP12.acf~", "DA40-XP11.acf~", "skunkcrafts_updater_sizeslist.txt", ".gitignore", "persistence.cfg" }
 whitelist_file = open("skunkcrafts_updater_whitelist.txt", "w")
 filesize_file = open("skunkcrafts_updater_sizeslist.txt", "w")
 
@@ -30,13 +30,13 @@ def crc32(file_path) -> int:
     crc32 = checksum
     return crc32
 
-def contains(array, string):
+def contains(array, string) -> bool:
     for item in array:
         if item == string:
             return True
     return False
 
-def iterate(folder):
+def iterate(folder) -> None:
     for files in os.listdir(folder):
         if contains(blacklist, files):
             print("Skipping " + os.path.join(folder, files))
