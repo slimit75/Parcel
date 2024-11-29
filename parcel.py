@@ -11,8 +11,8 @@ import zlib
 from pathlib import Path
 
 blacklist_file = Path(".parcelignore")
-whitelist_file = open("workdir/skunkcrafts_updater_whitelist.txt", "w")
-filesize_file = open("workdir/skunkcrafts_updater_sizeslist.txt", "w")
+whitelist_file = open("skunkcrafts_updater_whitelist.txt", "w")
+filesize_file = open("skunkcrafts_updater_sizeslist.txt", "w")
 
 
 def size(file_path: str) -> int:
@@ -61,7 +61,9 @@ def iterate(fp: str, blacklist: list[str]) -> None:
 		file_path = os.path.join(fp, files)
 		if skip:
 			print("Skipping " + file_path)
-			if Path.is_dir(Path(file_path)):
+			if files == "skunkcrafts_updater.cfg" or files == "skunkcrafts_updater_beta.cfg":
+				print("Preserving file...") # skip
+			elif Path.is_dir(Path(file_path)):
 				shutil.rmtree(os.path.join(os.curdir, file_path))
 			else:
 				os.remove(os.path.join(os.curdir, file_path))
