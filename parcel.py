@@ -71,8 +71,9 @@ def iterate(fp: str, blacklist: list[str]) -> None:
 		elif os.path.isdir(file_path):
 			iterate(file_path, blacklist)
 		else:
-			whitelist_file.write(f"{file_path}|{str(crc32(file_path))}\n")
-			filesize_file.write(f"{file_path}|{str(size(file_path))}\n")
+			file_path_out = file_path.replace("workdir/", "", 1)
+			whitelist_file.write(f"{file_path_out}|{str(crc32(file_path))}\n")
+			filesize_file.write(f"{file_path_out}|{str(size(file_path))}\n")
 
 
 def main():
