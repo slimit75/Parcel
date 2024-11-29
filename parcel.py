@@ -1,20 +1,18 @@
 """
-SimSolutions Parcel
+Parcel
 
 File generator for the Skunkscraft Updater
 2024 Ian Ward
 """
 import os
+import re
+import shutil
 import zlib
+from pathlib import Path
 
-blacklist = {"README.md", "README.odt", ".git", ".github", ".idea", ".cmake", "config.cfg", "config.cfg",
-             "cmake-build-relwithdebinfo", "cmake-build-release", "cmake-build-debug", "libs", "src", "exports.txt",
-             "CMakeLists.txt", ".gitmodules", "DA40-XP12_prefs.txt", "DA40-XP11_prefs.txt",
-             "skunkcrafts_updater_whitelist.txt", "skunkcrafts_updater.cfg", "skunkcrafts_updater_beta.cfg",
-             "parcel.py", "DA40-XP12.acf~", "DA40-XP11.acf~", "skunkcrafts_updater_sizeslist.txt", ".gitignore",
-             "persistence.cfg"}
-whitelist_file = open("skunkcrafts_updater_whitelist.txt", "w")
-filesize_file = open("skunkcrafts_updater_sizeslist.txt", "w")
+blacklist_file = Path(".parcelignore")
+whitelist_file = open("workdir/skunkcrafts_updater_whitelist.txt", "w")
+filesize_file = open("workdir/skunkcrafts_updater_sizeslist.txt", "w")
 
 
 def size(file_path: str) -> int:
@@ -26,8 +24,7 @@ def size(file_path: str) -> int:
 		int: Size of the file, as calculated by os.stat()
 	"""
 	# Adapted from https://discord.com/channels/397379810067742721/529085059324444672/1228246563562721290
-	size = os.stat(file_path).st_size
-	return size
+	return os.stat(file_path).st_size
 
 
 def crc32(fp: str) -> int:
@@ -36,7 +33,7 @@ def crc32(fp: str) -> int:
 	Args:
 		fp (str): Path to the current file
 	Returns:
-		int: CRC32 checksum
+		int: CRC32 checksum.
 	"""
 	# Adapted from https://discord.com/channels/397379810067742721/529085059324444672/1228246467035140147
 	with open(fp, mode="rb") as binary_io:
@@ -44,43 +41,50 @@ def crc32(fp: str) -> int:
 		chunksize = 65536
 		while chunk := binary_io.read(chunksize):
 			checksum = zlib.crc32(chunk, checksum)
-	crc32 = checksum
-	return crc32
+	return checksum
 
 
-# TODO: this looks immensely stupid
-def contains(array: set[str], string: str) -> bool:
-	"""
-	Check to see if an array contains a variable
-	Args:
-		array (set[str]): Array to check
-		string (str): String to check for
-	Returns:
-		bool: Result.
-	"""
-	for item in array:
-		if item == string:
-			return True
-	return False
-
-
-def iterate(fp: str) -> None:
+def iterate(fp: str, blacklist: list[str]) -> None:
 	"""
 	Iterate through all files and determine what is necessary
 	Args:
 		fp (str): Folder to iterate through.
+		blacklist (list[str]): Files to skip.
 	"""
 	for files in os.listdir(fp):
-		if contains(blacklist, files):
-			print("Skipping " + os.path.join(fp, files))
-		elif os.path.isdir(os.path.join(fp, files)):
-			iterate(os.path.join(fp, files))
+		skip = False
+		for item in blacklist:
+			if re.search(item, files):
+				skip = True
+				break
+
+		file_path = os.path.join(fp, files)
+		if skip:
+			print("Skipping " + file_path)
+			if Path.is_dir(Path(file_path)):
+				shutil.rmtree(os.path.join(os.curdir, file_path))
+			else:
+				os.remove(os.path.join(os.curdir, file_path))
+
+		elif os.path.isdir(file_path):
+			iterate(file_path, blacklist)
 		else:
-			whitelist_file.write(f"{os.path.join(fp, files)}|{str(crc32(os.path.join(fp, files)))}\n")
-			filesize_file.write(f"{os.path.join(fp, files)}|{str(size(os.path.join(fp, files)))}\n")
+			whitelist_file.write(f"{file_path}|{str(crc32(file_path))}\n")
+			filesize_file.write(f"{file_path}|{str(size(file_path))}\n")
 
 
-iterate(os.curdir)
+def main():
+	fp = Path.joinpath(Path(os.curdir), "workdir")
+	blacklist: list[str] = []
 
-whitelist_file.close()
-filesize_file.close()
+	if not blacklist_file.is_file():
+		print("Ignore file does not exist! Extra files may be added!")
+	else:
+		blacklist = blacklist_file.open().read().splitlines()
+
+	iterate(fp.name, blacklist)
+
+	whitelist_file.close()
+	filesize_file.close()
+
+main()
