@@ -1,9 +1,10 @@
 # Parcel
-Parcel is a script to simplify the distribution of updates for an addon aircraft for X-Plane.
+Parcel is a Python script designed to simplify the distribution of add-on aircraft for X-Plane via the [Skunkscraft Updater](https://forums.x-plane.org/index.php?/forums/forum/406-skunkcrafts-updater/).
 
-It (probably can't right now, but will): 
-- [ ] Clean up & remove files from development (`.ignore` files, source files, files from IDEs & more)
-- [ ] Automatically generate a zip file for download 
-- [x] Automatically generate files for the [Skunkscraft Updater](https://forums.x-plane.org/index.php?/forums/forum/406-skunkcrafts-updater/)
+**There is no guarantee that this will work. Instead of contacting the developers like a sane person, I tried reverse-engineering how it works instead. Seemed easier than talking to someone.**
 
-It will be intended to run as a part of an automated CI process, but currently won't. Do not run this in your main project folder, only run it in a duplicated version!
+To use:
+1. Drag your aircraft files into [workdir](./workdir).
+2. (Optional) Drag your .parcelignore file into the [same directory as the script](./).
+3. Run the python script.
+4. The resulting files will be left in [workdir](./workdir). Enjoy?
