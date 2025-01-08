@@ -5,7 +5,8 @@ Parcel is a Python script designed to simplify the distribution of add-on aircra
 
 To use:
 1. Drag your aircraft files into [workdir](./workdir).
-2. (Optional) Drag your .parcelignore file into the [same directory as the script](./). An example file as used in the SimSolutions DA40 is provided, but keep in mind it **only takes full file names** right now.
+2. (Optional) Drag your .parcelignore file into the [same directory as the script](./). An example file is provided, and
+   file or directory names are supported. Slashes should be omitted.
 3. Run the python script.
 4. The resulting files will be left in [workdir](./workdir). Enjoy?
 
