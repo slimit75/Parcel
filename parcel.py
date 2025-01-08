@@ -4,8 +4,8 @@ Parcel
 File generator for the Skunkscraft Updater
 2024 Ian Ward
 """
+import fnmatch
 import os
-import re
 import shutil
 import zlib
 from pathlib import Path
@@ -54,18 +54,19 @@ def iterate(fp: str, blacklist: list[str]) -> None:
 	for files in os.listdir(fp):
 		skip = False
 		for item in blacklist:
-			if re.search(item, files):
+			if fnmatch.fnmatch(files, item):
 				skip = True
 				break
 
 		file_path = os.path.join(fp, files)
 		if skip:
-			print("Skipping " + file_path)
 			if files == "skunkcrafts_updater.cfg" or files == "skunkcrafts_updater_beta.cfg":
-				print("Preserving file...") # skip
+				print("Preserving file " + file_path)  # skip
 			elif Path.is_dir(Path(file_path)):
+				print("Clearing directory " + file_path)
 				shutil.rmtree(os.path.join(os.curdir, file_path))
 			else:
+				print("Clearing " + file_path)
 				os.remove(os.path.join(os.curdir, file_path))
 
 		elif os.path.isdir(file_path):
