@@ -17,6 +17,7 @@ limitations under the License.
 import fnmatch
 import os
 import shutil
+import sys
 import zlib
 from pathlib import Path
 
@@ -54,52 +55,67 @@ def crc32(fp: str) -> int:
 	return checksum
 
 
-def iterate(fp: str, blacklist: list[str]) -> None:
+def clean_iterate(root: str, fp: str, blacklist: list[str]) -> None:
 	"""
-	Iterate through all files and determine what is necessary
+	Iterate through all files and delete what is unnecessary
 	Args:
+		root (str): Root directory, used in generating skunkcrafts files
 		fp (str): Folder to iterate through.
 		blacklist (list[str]): Files to skip.
 	"""
-	for files in os.listdir(fp):
+	for file_name in os.listdir(fp):
 		skip = False
 		for item in blacklist:
-			if fnmatch.fnmatch(files, item) or files.startswith("."):
+			if fnmatch.fnmatch(file_name, item) or file_name.startswith("."):
 				skip = True
 				break
 
-		file_path = os.path.join(fp, files)
+		file_path = os.path.join(fp, file_name)
 		if skip:
-			if files == "skunkcrafts_updater.cfg" or files == "skunkcrafts_updater_beta.cfg":
-				print("Preserving file " + file_path)  # skip
+			if file_name == "skunkcrafts_updater.cfg" or file_name == "skunkcrafts_updater_beta.cfg":
+				print("Preserving file", file_path)  # skip
 			elif Path.is_dir(Path(file_path)):
-				print("Clearing directory " + file_path)
+				print("Clearing directory", file_path)
 				shutil.rmtree(os.path.join(os.curdir, file_path))
 			else:
-				print("Clearing " + file_path)
+				print("Clearing", file_path)
 				os.remove(os.path.join(os.curdir, file_path))
 
 		elif os.path.isdir(file_path):
-			iterate(file_path, blacklist)
+			clean_iterate(root, file_path, blacklist)
 		else:
-			file_path_out = file_path.replace("workdir/", "", 1)
+			file_path_out = file_path.replace(root + "/", "", 1)
 			whitelist_file.write(f"{file_path_out}|{str(crc32(file_path))}\n")
 			filesize_file.write(f"{file_path_out}|{str(size(file_path))}\n")
 
 
 def main():
-	fp = Path.joinpath(Path(os.curdir), "workdir")
 	blacklist: list[str] = []
+
+	input_folder = sys.argv[1]
+	output_file = sys.argv[2]
 
 	if not blacklist_file.is_file():
 		print("Ignore file does not exist! Extra files may be added!")
 	else:
 		blacklist = blacklist_file.open().read().splitlines()
 
-	iterate(fp.name, blacklist)
+	clean_iterate(input_folder, input_folder, blacklist)
 
 	whitelist_file.close()
 	filesize_file.close()
+
+	outputs = output_file.split(".", 1)
+
+	if outputs[1] == "tar.gz":
+		outputs[1] = "gztar"
+	elif outputs[1] == "tar.bz":
+		outputs[1] = "bztar"
+	elif outputs[1] == "tar.xz":
+		outputs[1] = "xztar"
+
+	print("Generating", output_file)
+	shutil.make_archive(outputs[0], outputs[1], input_folder)
 
 
 main()
