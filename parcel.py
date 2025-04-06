@@ -117,5 +117,8 @@ def main():
 	print("Generating", output_file)
 	shutil.make_archive(outputs[0], outputs[1], input_folder)
 
+	shutil.move("skunkcrafts_updater_sizeslist.txt", input_folder)
+	shutil.move("skunkcrafts_updater_whitelist.txt", input_folder)
+
 
 main()

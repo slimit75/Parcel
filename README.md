@@ -9,7 +9,7 @@ To use, run the following:
 python parcel.py [input folder] [output file]
 ```
 Where:
-* `input folder` is a copy aircraft root folder (with the .acf file) and
+* `input folder` is a copy of the aircraft root folder (with the .acf file)
 * `output file` is the archive to output the aircraft to. You should include the file extension, as Parcel will automatically use that to determine what compression algorithm it uses.
 
 Important things to note:
