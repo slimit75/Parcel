@@ -64,7 +64,7 @@ def iterate(fp: str, blacklist: list[str]) -> None:
 	for files in os.listdir(fp):
 		skip = False
 		for item in blacklist:
-			if fnmatch.fnmatch(files, item):
+			if fnmatch.fnmatch(files, item) or files.startswith("."):
 				skip = True
 				break
 
