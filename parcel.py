@@ -93,7 +93,6 @@ def main():
 	blacklist: list[str] = []
 
 	input_folder = sys.argv[1]
-	output_file = sys.argv[2]
 
 	if not blacklist_file.is_file():
 		print("Ignore file does not exist! Extra files may be added!")
@@ -105,20 +104,10 @@ def main():
 	whitelist_file.close()
 	filesize_file.close()
 
-	outputs = output_file.split(".", 1)
-
-	if outputs[1] == "tar.gz":
-		outputs[1] = "gztar"
-	elif outputs[1] == "tar.bz":
-		outputs[1] = "bztar"
-	elif outputs[1] == "tar.xz":
-		outputs[1] = "xztar"
-
-	print("Generating", output_file)
-	shutil.make_archive(outputs[0], outputs[1], input_folder)
+	print("Generating", input_folder + ".zip")
+	shutil.make_archive(input_folder, "zip", input_folder)
 
 	shutil.move("skunkcrafts_updater_sizeslist.txt", input_folder)
 	shutil.move("skunkcrafts_updater_whitelist.txt", input_folder)
-
 
 main()
