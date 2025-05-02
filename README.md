@@ -1,7 +1,8 @@
 # Parcel
 Parcel is a Python script designed to simplify the distribution of add-on aircraft for X-Plane via the [Skunkscrafts Updater](https://forums.x-plane.org/index.php?/forums/forum/406-skunkcrafts-updater/).
 
-> ⚠️ There are no guarantees when using this. Instead of contacting the original developers like a sane person, I tried reverse-engineering how it works instead.
+> [!WARNING]
+> There are no guarantees when using this. Instead of contacting the original developers like a sane person, I tried reverse-engineering how it works instead.
 
 ## Usage
 To use, run the following:
