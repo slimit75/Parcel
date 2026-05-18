@@ -93,6 +93,8 @@ def main():
 	blacklist: list[str] = []
 
 	input_folder = sys.argv[1]
+	os.mkdir("output")
+	output_folder = Path("output")
 
 	if not blacklist_file.is_file():
 		print("Ignore file does not exist! Extra files may be added!")
@@ -107,7 +109,7 @@ def main():
 	print("Generating", input_folder + ".zip")
 	shutil.make_archive(input_folder, "zip", input_folder)
 
-	shutil.move("skunkcrafts_updater_sizeslist.txt", input_folder)
-	shutil.move("skunkcrafts_updater_whitelist.txt", input_folder)
+	shutil.move("skunkcrafts_updater_sizeslist.txt", output_folder)
+	shutil.move("skunkcrafts_updater_whitelist.txt", output_folder)
 
 main()
