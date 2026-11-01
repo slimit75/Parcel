@@ -11,7 +11,7 @@ async function UploadFile(name: string, path:string) {
     const {id, size} = await artifact.uploadArtifact(
         name,
         [ path ], // files to include (supports absolute and relative paths)
-        ""
+        "$GITHUB_WORKSPACE"
     );
 
     core.debug(`Created artifact with id: ${id} (bytes: ${size}`);
