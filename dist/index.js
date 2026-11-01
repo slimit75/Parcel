@@ -134572,11 +134572,10 @@ const artifact = new DefaultArtifactClient();
  * Upload a file as an artifact
  *
  * @param name Name to show up under the artifacts section
- * @param path Path to file
+ * @param paths Path to file
  */
-async function UploadFile(name, path) {
-    const { id, size } = await artifact.uploadArtifact(name, [path], // files to include (supports absolute and relative paths)
-    process.env.GITHUB_WORKSPACE);
+async function UploadFile(name, paths) {
+    const { id, size } = await artifact.uploadArtifact(name, paths, process.env.GITHUB_WORKSPACE);
     debug(`Created artifact with id: ${id} (bytes: ${size}`);
 }
 /**
@@ -134591,8 +134590,11 @@ async function run() {
         // TODO: this logic should probably be refactored into this script
         await exec('curl -O https://raw.githubusercontent.com/slimit75/Parcel/refs/heads/main/parcel.py');
         await exec(`python parcel.py ${acf_in}`);
-        await UploadFile('SkunkCraft Updater server files', `${acf_in}.zip`);
-        await UploadFile('Aircraft.zip', 'output/*');
+        await UploadFile('Aircraft redistributable', [`${acf_in}.zip`]);
+        await UploadFile('Server manifest files', [
+            'output/skunkcrafts_updater_sizeslist.txt',
+            'output/skunkcrafts_updater_whitelist.txt'
+        ]);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
