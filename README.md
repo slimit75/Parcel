@@ -1,20 +1,16 @@
 # Parcel
-Parcel is a Python script designed to simplify the distribution of add-on aircraft for X-Plane via the [SkunkCrafts Updater](https://forums.x-plane.org/index.php?/forums/forum/406-skunkcrafts-updater/).
+Parcel is a GitHub Action designed to simplify the distribution of add-on aircraft for X-Plane using the [SkunkCrafts Updater](https://forums.x-plane.org/index.php?/forums/forum/406-skunkcrafts-updater/).
+
+> [!NOTE]
+> If you are looking for the older Python script version, please check out the [legacy_py_script](./tree/legacy_py_script) branch.
 
 > [!WARNING]
 > This project is provided as-is and may break at any time. This project was developed without input from the original developers of the SkunkCrafts Updater, and this project should not be confused for anything officially endorsed.
 
 ## Usage
-To use, run the following:
-```sh
-python parcel.py [input folder]
-```
-Where:
-* `input folder` is a copy of the aircraft root folder (the folder with the .acf file)
+> [!IMPORTANT]
+> This project is a work in progress, and documentation is admittedly lacking at the moment. At the same time, things 
+are not yet stable. If you need something *slightly* more proven, please check out the Python script above. Otherwise, if you have any questions,
+please feel free to reach out over Discord (`@slimit75`) or Matrix (`@slimit75:matrix.org`).
 
-Important things to note:
-* **The input folder must be a copy!** Parcel will delete any file that is included in `.parcelignore` OR any file that starts with a period.
-* The output archive does not include the `skunkcrafts_updater_*` files. Those files are copied into the `input folder` after the creation of the output file. You should have new users download the output file on first install, and upload the input folder to your server.
-
-## More
-Please read the [wiki](https://github.com/slimit75/Parcel/wiki) for more information in regard to usage and file specifications.
+Please read the [wiki](https://github.com/slimit75/Parcel/wiki) for information about usage and file specifications.

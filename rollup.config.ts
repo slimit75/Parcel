@@ -6,14 +6,14 @@ import typescript from '@rollup/plugin-typescript'
 import json from '@rollup/plugin-json'
 
 const config = {
-  input: 'src/index.ts',
-  output: {
-    esModule: true,
-    file: 'dist/index.js',
-    format: 'es',
-    sourcemap: true
-  },
-  plugins: [json(), typescript(), nodeResolve({ preferBuiltins: true }), commonjs()]
+    input: 'src/index.ts',
+    output: {
+        esModule: true,
+        file: 'dist/index.js',
+        format: 'es',
+        sourcemap: true
+    },
+    plugins: [json(), typescript(), nodeResolve({preferBuiltins: true}), commonjs()]
 }
 
 export default config
