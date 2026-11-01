@@ -1,6 +1,8 @@
-import require$$0 from '@actions/core';
-import require$$1 from '@actions/exec';
-import require$$2 from '@actions/artifact';
+'use strict';
+
+var require$$0 = require('@actions/core');
+var require$$1 = require('@actions/exec');
+var require$$2 = require('@actions/artifact');
 
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -55,5 +57,5 @@ function requireSrc () {
 var srcExports = requireSrc();
 var index = /*@__PURE__*/getDefaultExportFromCjs(srcExports);
 
-export { index as default };
+module.exports = index;
 //# sourceMappingURL=index.js.map
