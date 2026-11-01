@@ -1,9 +1,9 @@
-// for future reference, because I am new to this stuff, see:
-// https://docs.github.com/en/actions/tutorials/create-actions/create-a-javascript-action
-
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import {DefaultArtifactClient} from "@actions/artifact";
+import {crc32} from "@foxglove/crc";
+import {open} from "fs/promises";
+import {FileHandle} from "node:fs/promises";
 
 const artifact = new DefaultArtifactClient();
 
@@ -17,6 +17,22 @@ async function UploadFile(name: string, paths: string[]) {
     const {id, size} = await artifact.uploadArtifact(name, paths, <string>process.env.GITHUB_WORKSPACE);
 
     core.debug(`Created artifact with id: ${id} (bytes: ${size}`);
+}
+
+/**
+ * Calculates the checksum & relevant file size from a file
+ *
+ * @param fp File path
+ */
+async function calc_details(fp: string): Promise<{ checksum: number, size: number }> {
+    // Thanks to https://stackoverflow.com/a/76978551
+    const handler: FileHandle = await open(fp, 'r');
+    const {buffer, bytesRead} = await handler.read()
+
+    return {
+        checksum: crc32(buffer),
+        size: bytesRead
+    };
 }
 
 /**

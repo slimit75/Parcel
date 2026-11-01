@@ -134565,8 +134565,47 @@ If the error persists, please check whether Actions and API requests are operati
     }
 }
 
-// for future reference, because I am new to this stuff, see:
-// https://docs.github.com/en/actions/tutorials/create-actions/create-a-javascript-action
+/**
+ * Compute CRC32 lookup tables as described at:
+ * https://github.com/komrad36/CRC#option-6-1-byte-tabular
+ *
+ * An iteration of CRC computation can be performed on 8 bits of input at once. By pre-computing a
+ * table of the values of CRC(?) for all 2^8 = 256 possible byte values, during the final
+ * computation we can replace a loop over 8 bits with a single lookup in the table.
+ *
+ * For further speedup, we can also pre-compute the values of CRC(?0) for all possible bytes when a
+ * zero byte is appended. Then we can process two bytes of input at once by computing CRC(AB) =
+ * CRC(A0) ^ CRC(B), using one lookup in the CRC(?0) table and one lookup in the CRC(?) table.
+ *
+ * The same technique applies for any number of bytes to be processed at once, although the speed
+ * improvements diminish.
+ *
+ * @param polynomial The binary representation of the polynomial to use (reversed, i.e. most
+ * significant bit represents x^0).
+ * @param numTables The number of bytes of input that will be processed at once.
+ */
+function crc32GenerateTables({ polynomial, numTables, }) {
+    const table = new Uint32Array(256 * numTables);
+    for (let i = 0; i < 256; i++) {
+        let r = i;
+        r = ((r & 1) * polynomial) ^ (r >>> 1);
+        r = ((r & 1) * polynomial) ^ (r >>> 1);
+        r = ((r & 1) * polynomial) ^ (r >>> 1);
+        r = ((r & 1) * polynomial) ^ (r >>> 1);
+        r = ((r & 1) * polynomial) ^ (r >>> 1);
+        r = ((r & 1) * polynomial) ^ (r >>> 1);
+        r = ((r & 1) * polynomial) ^ (r >>> 1);
+        r = ((r & 1) * polynomial) ^ (r >>> 1);
+        table[i] = r;
+    }
+    for (let i = 256; i < table.length; i++) {
+        const value = table[i - 256];
+        table[i] = table[value & 0xff] ^ (value >>> 8);
+    }
+    return table;
+}
+crc32GenerateTables({ polynomial: 0xedb88320, numTables: 8 });
+
 const artifact = new DefaultArtifactClient();
 /**
  * Upload a file as an artifact
