@@ -1,0 +1,12 @@
+name: Parcel
+description: Unofficial generator of manifest files for the Skunkscraft Updater
+
+inputs:
+  acf-in-name:
+    description: Input aircraft folder
+    required: true
+    default: folder
+
+runs:
+  using: node24
+  main: dist/index.js
