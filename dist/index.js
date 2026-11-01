@@ -134568,9 +134568,15 @@ If the error persists, please check whether Actions and API requests are operati
 // for future reference, because I am new to this stuff, see:
 // https://docs.github.com/en/actions/tutorials/create-actions/create-a-javascript-action
 const artifact = new DefaultArtifactClient();
+/**
+ * Upload a file as an artifact
+ *
+ * @param name Name to show up under the artifacts section
+ * @param path Path to file
+ */
 async function UploadFile(name, path) {
     const { id, size } = await artifact.uploadArtifact(name, [path], // files to include (supports absolute and relative paths)
-    "");
+    process.env.GITHUB_WORKSPACE);
     debug(`Created artifact with id: ${id} (bytes: ${size}`);
 }
 /**

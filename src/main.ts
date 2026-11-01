@@ -7,11 +7,17 @@ import {DefaultArtifactClient} from "@actions/artifact";
 
 const artifact = new DefaultArtifactClient();
 
-async function UploadFile(name: string, path:string) {
+/**
+ * Upload a file as an artifact
+ *
+ * @param name Name to show up under the artifacts section
+ * @param path Path to file
+ */
+async function UploadFile(name: string, path: string) {
     const {id, size} = await artifact.uploadArtifact(
         name,
-        [ path ], // files to include (supports absolute and relative paths)
-        "$GITHUB_WORKSPACE"
+        [path], // files to include (supports absolute and relative paths)
+        <string>process.env.GITHUB_WORKSPACE
     );
 
     core.debug(`Created artifact with id: ${id} (bytes: ${size}`);
