@@ -18,18 +18,17 @@
 import * as core from '@actions/core'
 import {DefaultArtifactClient} from "@actions/artifact";
 import {crc32} from "@foxglove/crc";
-import {open} from "fs/promises";
-import {FileHandle} from "node:fs/promises";
-import * as fs from "node:fs";
+import * as fs from "node:fs/promises";
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {minimatch} from 'minimatch';
+import {fileMove} from './helpers.js';
 
 const artifact = new DefaultArtifactClient();
 
-let blacklist_file: FileHandle;
-let whitelist_file: FileHandle;
-let sizelist_file: FileHandle;
+let blacklist_file: fs.FileHandle;
+let whitelist_file: fs.FileHandle;
+let sizelist_file: fs.FileHandle;
 
 /**
  * Upload a file as an artifact
@@ -50,7 +49,7 @@ async function UploadFile(name: string, paths: string[]) {
  */
 async function calc_details(fp: string): Promise<{ checksum: number, size: number }> {
     // Thanks to https://stackoverflow.com/a/76978551
-    const handler: FileHandle = await open(fp, 'r');
+    const handler = await fs.open(fp, 'r');
     const {buffer, bytesRead} = await handler.read();
     await handler.close();
 
@@ -68,45 +67,39 @@ async function calc_details(fp: string): Promise<{ checksum: number, size: numbe
  * @param blacklist Files to skip.
  */
 async function clean_iterate(root: string, fp: string, blacklist: string[]): Promise<void> {
-    fs.readdir(fp, async (err, files) => {
-        if (err) throw err;
-        for (const file_name in files) {
-            let skip = false;
+    const files = await fs.readdir(fp);
 
-            for (const item in blacklist) {
-                if (minimatch(file_name, item) || file_name.startsWith(".")) {
-                    skip = true;
-                    break;
-                }
+    for (const file of files) {
+        let skip = false;
+        let file_path: string = join(fp, file);
+
+        blacklist.forEach(item => {
+            if (minimatch(file_path, item, { partial: true, matchBase: true }) || file.startsWith(".")) {
+                skip = true;
             }
+        });
 
-            let file_path: string = join(fp, file_name);
+        let isDirectory: boolean = false;
+        const stats = await fs.stat(file_path);
+        isDirectory = stats.isDirectory();
 
-            let isDirectory: boolean = false;
-            fs.stat(file_path, (err, stats) => {
-                if (err) throw err;
-                isDirectory = stats.isDirectory();
-            });
-
-            if (skip) {
-                if ((file_name == "skunkcrafts_updater.cfg") || (file_name == "skunkcrafts_updater_beta.cfg")) {
-                    core.debug(`Preserving file ${file_path}`); // skip
-                } else {
-                    core.debug(`Clearing ${file_path}`);
-                    fs.rm(file_path, {recursive: true}, (err) => {
-                        if (err) throw err;
-                    });
-                }
-            } else if (isDirectory) {
-                await clean_iterate(root, file_path, blacklist);
+        if (skip) {
+            if ((file == "skunkcrafts_updater.cfg") || (file == "skunkcrafts_updater_beta.cfg")) {
+                core.debug(`Preserving file ${file_path}`); // skip
             } else {
-                let file_path_out = file_path.replace(`${root}/`, "");
-                let {checksum, size} = await calc_details(file_path);
-                await whitelist_file.write(`${file_path_out}|${checksum}\n`);
-                await sizelist_file.write(`${file_path_out}|${size}\n`);
+                core.debug(`Clearing ${file_path}`);
+                await fs.rm(file_path, {recursive: true});
             }
+        } else if (isDirectory) {
+            await clean_iterate(root, file_path, blacklist);
+        } else {
+            let file_path_out = file_path.replace(root, "");
+            let {checksum, size} = await calc_details(file_path);
+
+            await whitelist_file.write(`${file_path_out}|${checksum}\n`);
+            await sizelist_file.write(`${file_path_out}|${size}\n`);
         }
-    });
+    }
 }
 
 /**
@@ -117,7 +110,7 @@ async function clean_iterate(root: string, fp: string, blacklist: string[]): Pro
 export async function run(): Promise<void> {
     try {
         // Load and read blacklist file
-        blacklist_file = await open(".parcelignore", "r");
+        blacklist_file = await fs.open(".parcelignore", "r");
         let blacklist: string[] = [];
         for await (const line of blacklist_file.readLines()) {
             blacklist.push(line);
@@ -125,17 +118,12 @@ export async function run(): Promise<void> {
         await blacklist_file.close();
 
         // Create whitelist & sizelist files
-        whitelist_file = await open("skunkcrafts_updater_whitelist.txt", "w");
-        sizelist_file = await open("skunkcrafts_updater_sizeslist.txt", "w");
+        whitelist_file = await fs.open("skunkcrafts_updater_whitelist.txt", "w");
+        sizelist_file = await fs.open("skunkcrafts_updater_sizeslist.txt", "w");
 
         // Load input folder and determine output folder
         const input_folder = core.getInput("acf-in-name"); // TODO: this input should probably be sanitized
-        let output_folder;
-
-        fs.mkdtemp(join(tmpdir(), 'output-'), (err, directory) => {
-            if (err) throw err;
-            output_folder = directory;
-        });
+        let output_folder = await fs.mkdtemp(join(tmpdir(), 'output-'));
 
         // Iterate through files untile done and close whitelist & sizelist files
         await clean_iterate(input_folder, input_folder, blacklist);
@@ -144,21 +132,8 @@ export async function run(): Promise<void> {
         await sizelist_file.close();
 
         // Move whitelist & sizelist files
-        fs.rename(
-            "skunkcrafts_updater_sizeslist.txt",
-            `${output_folder}/"skunkcrafts_updater_sizeslist.txt"`,
-            function (err) {
-                if (err) throw err;
-            }
-        );
-
-        fs.rename(
-            "skunkcrafts_updater_whitelist.txt",
-            `${output_folder}/"skunkcrafts_updater_whitelist.txt"`,
-            function (err) {
-                if (err) throw err;
-            }
-        );
+        fileMove("skunkcrafts_updater_sizeslist.txt", `${output_folder}/skunkcrafts_updater_sizeslist.txt`);
+        fileMove("skunkcrafts_updater_whitelist.txt", `${output_folder}/skunkcrafts_updater_whitelist.txt`);
 
         // Upload files as artifacts
         await UploadFile(`${input_folder}.zip`, [

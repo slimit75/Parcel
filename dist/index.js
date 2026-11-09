@@ -2,7 +2,7 @@ import * as os from 'os';
 import os__default, { EOL as EOL$2 } from 'os';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
-import fs__default$1, { promises as promises$1, existsSync, readFileSync } from 'fs';
+import fs__default, { promises as promises$1, existsSync, readFileSync } from 'fs';
 import * as path$2 from 'path';
 import path__default, { normalize as normalize$1, resolve } from 'path';
 import * as http from 'http';
@@ -45,12 +45,12 @@ import https$1 from 'node:https';
 import { createHmac } from 'node:crypto';
 import require$$0$b from 'tty';
 import { URL as URL$1 } from 'url';
-import * as fs$1 from 'node:fs';
-import fs__default from 'node:fs';
-import fs$2, { realpath, open as open$1 } from 'fs/promises';
+import fs$2 from 'node:fs';
+import fs$3, { realpath } from 'fs/promises';
 import require$$0$c from 'constants';
 import require$$1$5, { join } from 'node:path';
-import require$$5$5 from 'node:fs/promises';
+import * as fs$1 from 'node:fs/promises';
+import fs__default$1 from 'node:fs/promises';
 import require$$2$1 from 'node:string_decoder';
 import require$$0$e from 'zlib';
 
@@ -74814,7 +74814,7 @@ async function streamToBuffer(stream, buffer, offset, end, encoding) {
  */
 async function readStreamToLocalFile(rs, file) {
     return new Promise((resolve, reject) => {
-        const ws = fs__default.createWriteStream(file);
+        const ws = fs$2.createWriteStream(file);
         rs.on("error", (err) => {
             reject(err);
         });
@@ -74830,8 +74830,8 @@ async function readStreamToLocalFile(rs, file) {
  *
  * Promisified version of fs.stat().
  */
-const fsStat = require$$0$9.promisify(fs__default.stat);
-const fsCreateReadStream = fs__default.createReadStream;
+const fsStat = require$$0$9.promisify(fs$2.stat);
+const fsCreateReadStream = fs$2.createReadStream;
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
@@ -79254,7 +79254,7 @@ function requireReaddirGlob () {
 	hasRequiredReaddirGlob = 1;
 	readdirGlob_1 = readdirGlob;
 
-	const fs = fs__default$1;
+	const fs = fs__default;
 	const { EventEmitter } = require$$1;
 	const { Minimatch } = requireMinimatch();
 	const { resolve } = path__default;
@@ -86085,7 +86085,7 @@ var hasRequiredGracefulFs;
 function requireGracefulFs () {
 	if (hasRequiredGracefulFs) return gracefulFs;
 	hasRequiredGracefulFs = 1;
-	var fs = fs__default$1;
+	var fs = fs__default;
 	var polyfills = requirePolyfills();
 	var legacy = requireLegacyStreams();
 	var clone = requireClone();
@@ -106086,12 +106086,12 @@ function requireCommonjs$1 () {
 	const lru_cache_1 = /*@__PURE__*/ requireCommonjs$3();
 	const node_path_1 = require$$1$5;
 	const node_url_1 = require$$1$2;
-	const fs_1 = fs__default$1;
-	const actualFS = __importStar(fs__default);
+	const fs_1 = fs__default;
+	const actualFS = __importStar(fs$2);
 	const realpathSync = fs_1.realpathSync.native;
 	// TODO: test perf of fs/promises realpath vs realpathCB,
 	// since the promises one uses realpath.native
-	const promises_1 = require$$5$5;
+	const promises_1 = fs__default$1;
 	const minipass_1 = requireCommonjs$2();
 	const defaultFS = {
 	    lstatSync: fs_1.lstatSync,
@@ -109950,7 +109950,7 @@ var hasRequiredCore;
 function requireCore () {
 	if (hasRequiredCore) return core;
 	hasRequiredCore = 1;
-	var fs = fs__default$1;
+	var fs = fs__default;
 	var glob = requireReaddirGlob();
 	var async = require$$2;
 	var path = path__default;
@@ -132459,7 +132459,7 @@ function requireMkdirp () {
 	if (hasRequiredMkdirp) return mkdirp;
 	hasRequiredMkdirp = 1;
 	var path = path__default;
-	var fs = fs__default$1;
+	var fs = fs__default;
 	var _0777 = parseInt('0777', 8);
 
 	mkdirp = mkdirP.mkdirp = mkdirP.mkdirP = mkdirP;
@@ -132569,7 +132569,7 @@ var hasRequiredExtract;
 function requireExtract () {
 	if (hasRequiredExtract) return extract;
 	hasRequiredExtract = 1;
-	var fs = fs__default$1;
+	var fs = fs__default;
 	var path = path__default;
 	var util = require$$0$3;
 	var mkdirp = requireMkdirp();
@@ -132700,7 +132700,7 @@ const scrubQueryParameters = (url) => {
 function exists(path) {
     return __awaiter$4(this, void 0, void 0, function* () {
         try {
-            yield fs$2.access(path);
+            yield fs$3.access(path);
             return true;
         }
         catch (error) {
@@ -132897,7 +132897,7 @@ function resolveOrCreateDirectory() {
     return __awaiter$4(this, arguments, void 0, function* (downloadPath = getGitHubWorkspaceDir()) {
         if (!(yield exists(downloadPath))) {
             debug$3(`Artifact destination folder does not exist, creating: ${downloadPath}`);
-            yield fs$2.mkdir(downloadPath, { recursive: true });
+            yield fs$3.mkdir(downloadPath, { recursive: true });
         }
         else {
             debug$3(`Artifact destination folder already exists: ${downloadPath}`);
@@ -138118,6 +138118,33 @@ minimatch.unescape = unescape;
     See the License for the specific language governing permissions and
     limitations under the License.
  */
+function fileMove(src, dest) {
+    fs$2.copyFile(src, dest, (err) => {
+        if (err)
+            throw err;
+    });
+    fs$2.rm(src, (err) => {
+        if (err)
+            throw err;
+    });
+}
+
+/*
+    Parcel - UNOFFICIAL file generator for the Skunkscraft Updater
+    Copyright 2026 Ian Ward
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ */
 const artifact = new DefaultArtifactClient();
 let blacklist_file;
 let whitelist_file;
@@ -138139,7 +138166,7 @@ async function UploadFile(name, paths) {
  */
 async function calc_details(fp) {
     // Thanks to https://stackoverflow.com/a/76978551
-    const handler = await open$1(fp, 'r');
+    const handler = await fs$1.open(fp, 'r');
     const { buffer, bytesRead } = await handler.read();
     await handler.close();
     return {
@@ -138155,47 +138182,37 @@ async function calc_details(fp) {
  * @param blacklist Files to skip.
  */
 async function clean_iterate(root, fp, blacklist) {
-    fs$1.readdir(fp, async (err, files) => {
-        if (err)
-            throw err;
-        for (const file_name in files) {
-            let skip = false;
-            for (const item in blacklist) {
-                if (minimatch(file_name, item) || file_name.startsWith(".")) {
-                    skip = true;
-                    break;
-                }
+    const files = await fs$1.readdir(fp);
+    for (const file of files) {
+        let skip = false;
+        let file_path = join(fp, file);
+        blacklist.forEach(item => {
+            if (minimatch(file_path, item, { partial: true, matchBase: true }) || file.startsWith(".")) {
+                skip = true;
             }
-            let file_path = join(fp, file_name);
-            let isDirectory = false;
-            fs$1.stat(file_path, (err, stats) => {
-                if (err)
-                    throw err;
-                isDirectory = stats.isDirectory();
-            });
-            if (skip) {
-                if ((file_name == "skunkcrafts_updater.cfg") || (file_name == "skunkcrafts_updater_beta.cfg")) {
-                    debug$3(`Preserving file ${file_path}`); // skip
-                }
-                else {
-                    debug$3(`Clearing ${file_path}`);
-                    fs$1.rm(file_path, { recursive: true }, (err) => {
-                        if (err)
-                            throw err;
-                    });
-                }
-            }
-            else if (isDirectory) {
-                await clean_iterate(root, file_path, blacklist);
+        });
+        let isDirectory = false;
+        const stats = await fs$1.stat(file_path);
+        isDirectory = stats.isDirectory();
+        if (skip) {
+            if ((file == "skunkcrafts_updater.cfg") || (file == "skunkcrafts_updater_beta.cfg")) {
+                debug$3(`Preserving file ${file_path}`); // skip
             }
             else {
-                let file_path_out = file_path.replace(`${root}/`, "");
-                let { checksum, size } = await calc_details(file_path);
-                await whitelist_file.write(`${file_path_out}|${checksum}\n`);
-                await sizelist_file.write(`${file_path_out}|${size}\n`);
+                debug$3(`Clearing ${file_path}`);
+                await fs$1.rm(file_path, { recursive: true });
             }
         }
-    });
+        else if (isDirectory) {
+            await clean_iterate(root, file_path, blacklist);
+        }
+        else {
+            let file_path_out = file_path.replace(root, "");
+            let { checksum, size } = await calc_details(file_path);
+            await whitelist_file.write(`${file_path_out}|${checksum}\n`);
+            await sizelist_file.write(`${file_path_out}|${size}\n`);
+        }
+    }
 }
 /**
  * The main function for the action.
@@ -138205,36 +138222,25 @@ async function clean_iterate(root, fp, blacklist) {
 async function run() {
     try {
         // Load and read blacklist file
-        blacklist_file = await open$1(".parcelignore", "r");
+        blacklist_file = await fs$1.open(".parcelignore", "r");
         let blacklist = [];
         for await (const line of blacklist_file.readLines()) {
             blacklist.push(line);
         }
         await blacklist_file.close();
         // Create whitelist & sizelist files
-        whitelist_file = await open$1("skunkcrafts_updater_whitelist.txt", "w");
-        sizelist_file = await open$1("skunkcrafts_updater_sizeslist.txt", "w");
+        whitelist_file = await fs$1.open("skunkcrafts_updater_whitelist.txt", "w");
+        sizelist_file = await fs$1.open("skunkcrafts_updater_sizeslist.txt", "w");
         // Load input folder and determine output folder
         const input_folder = getInput("acf-in-name"); // TODO: this input should probably be sanitized
-        let output_folder;
-        fs$1.mkdtemp(join(tmpdir(), 'output-'), (err, directory) => {
-            if (err)
-                throw err;
-            output_folder = directory;
-        });
+        let output_folder = await fs$1.mkdtemp(join(tmpdir(), 'output-'));
         // Iterate through files untile done and close whitelist & sizelist files
         await clean_iterate(input_folder, input_folder, blacklist);
         await whitelist_file.close();
         await sizelist_file.close();
         // Move whitelist & sizelist files
-        fs$1.rename("skunkcrafts_updater_sizeslist.txt", `${output_folder}/"skunkcrafts_updater_sizeslist.txt"`, function (err) {
-            if (err)
-                throw err;
-        });
-        fs$1.rename("skunkcrafts_updater_whitelist.txt", `${output_folder}/"skunkcrafts_updater_whitelist.txt"`, function (err) {
-            if (err)
-                throw err;
-        });
+        fileMove("skunkcrafts_updater_sizeslist.txt", `${output_folder}/skunkcrafts_updater_sizeslist.txt`);
+        fileMove("skunkcrafts_updater_whitelist.txt", `${output_folder}/skunkcrafts_updater_whitelist.txt`);
         // Upload files as artifacts
         await UploadFile(`${input_folder}.zip`, [
             input_folder

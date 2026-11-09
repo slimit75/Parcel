@@ -1,6 +1,6 @@
 {
 	"name": "Parcel",
-	"description": "WIP",
+	"description": "Unofficial generator of manifest files for the Skunkscraft Updater.",
 	"version": "3.0.0-dev",
 	"author": "Ian Ward",
 	"type": "module",
