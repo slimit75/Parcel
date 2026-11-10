@@ -120,7 +120,7 @@ export async function run(): Promise<void> {
 
         // Load input folder and determine output folder
         const input_folder = core.getInput("acf-in-name"); // TODO: this input should probably be sanitized
-        let output_folder = await fs.mkdtemp(join(tmpdir(), 'output-'));
+        let output_folder = await fs.mkdtemp('output-');
 
         // Iterate through files untile done and close whitelist & sizelist files
         await clean_iterate(input_folder, input_folder, blacklist);
@@ -133,7 +133,7 @@ export async function run(): Promise<void> {
         fileMove("skunkcrafts_updater_whitelist.txt", `${output_folder}/skunkcrafts_updater_whitelist.txt`);
 
         // Upload files as artifacts
-        await UploadFile(`${input_folder}.zip`, [
+        await UploadFile(input_folder, [
             input_folder
         ]);
 
