@@ -1,6 +1,9 @@
 # Parcel
 Parcel is a Python script designed to simplify the distribution of add-on aircraft for X-Plane via the [SkunkCrafts Updater](https://forums.x-plane.org/index.php?/forums/forum/406-skunkcrafts-updater/).
 
+> [!IMPORTANT]
+> This branch is for the depreciated Python script version. If you wish to access the GitHub Actions version, which is still maintained, please check out the [current base branch](https://github.com/slimit75/Parcel).
+
 > [!WARNING]
 > This project is provided as-is and may break at any time. This project was developed without input from the original developers of the SkunkCrafts Updater, and this project should not be confused for anything officially endorsed.
 
