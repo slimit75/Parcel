@@ -89,7 +89,7 @@ async function clean_iterate(root: string, fp: string, blacklist: string[]): Pro
         } else if (isDirectory) {
             await clean_iterate(root, file_path, blacklist);
         } else {
-            let file_path_out = file_path.replace(root, "");
+            let file_path_out = file_path.replace(`${root}/`, "");
             let checksum = await calc_crc32(file_path);
 
             await whitelist_file.write(`${file_path_out}|${checksum}\n`);
@@ -133,7 +133,7 @@ export async function run(): Promise<void> {
 
         // Upload files as artifacts
         await UploadFile(input_folder, [
-            input_folder
+            `${input_folder}/*`
         ]);
 
         await UploadFile('Server manifest files', [

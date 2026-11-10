@@ -138102,7 +138102,7 @@ async function clean_iterate(root, fp, blacklist) {
             await clean_iterate(root, file_path, blacklist);
         }
         else {
-            let file_path_out = file_path.replace(root, "");
+            let file_path_out = file_path.replace(`${root}/`, "");
             let checksum = await calc_crc32(file_path);
             await whitelist_file.write(`${file_path_out}|${checksum}\n`);
             await sizelist_file.write(`${file_path_out}|${stats.size}\n`);
@@ -138138,7 +138138,7 @@ async function run() {
         fileMove("skunkcrafts_updater_whitelist.txt", `${output_folder}/skunkcrafts_updater_whitelist.txt`);
         // Upload files as artifacts
         await UploadFile(input_folder, [
-            input_folder
+            `${input_folder}/*`
         ]);
         await UploadFile('Server manifest files', [
             `${output_folder}/skunkcrafts_updater_sizeslist.txt`,
