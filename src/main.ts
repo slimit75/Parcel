@@ -17,7 +17,7 @@
 
 import * as core from '@actions/core'
 import {DefaultArtifactClient} from "@actions/artifact";
-import {crc32} from "@foxglove/crc";
+import {crc32} from "node:zlib";
 import * as fs from "node:fs/promises";
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
@@ -47,16 +47,13 @@ async function UploadFile(name: string, paths: string[]) {
  *
  * @param fp File path
  */
-async function calc_details(fp: string): Promise<{ checksum: number, size: number }> {
+async function calc_crc32(fp: string): Promise<number> {
     // Thanks to https://stackoverflow.com/a/76978551
     const handler = await fs.open(fp, 'r');
-    const {buffer, bytesRead} = await handler.read();
+    const {buffer} = await handler.read();
     await handler.close();
 
-    return {
-        checksum: crc32(buffer),
-        size: bytesRead
-    };
+    return crc32(buffer);
 }
 
 /**
@@ -74,7 +71,7 @@ async function clean_iterate(root: string, fp: string, blacklist: string[]): Pro
         let file_path: string = join(fp, file);
 
         blacklist.forEach(item => {
-            if (minimatch(file_path, item, { partial: true, matchBase: true }) || file.startsWith(".")) {
+            if (minimatch(file_path, item, {partial: true, matchBase: true}) || file.startsWith(".")) {
                 skip = true;
             }
         });
@@ -94,10 +91,10 @@ async function clean_iterate(root: string, fp: string, blacklist: string[]): Pro
             await clean_iterate(root, file_path, blacklist);
         } else {
             let file_path_out = file_path.replace(root, "");
-            let {checksum, size} = await calc_details(file_path);
+            let checksum = await calc_crc32(file_path);
 
             await whitelist_file.write(`${file_path_out}|${checksum}\n`);
-            await sizelist_file.write(`${file_path_out}|${size}\n`);
+            await sizelist_file.write(`${file_path_out}|${stats.size}\n`);
         }
     }
 }
