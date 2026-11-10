@@ -25,7 +25,7 @@ import require$$7 from 'node:querystring';
 import require$$0$5 from 'node:events';
 import require$$0$a from 'node:diagnostics_channel';
 import require$$5 from 'node:tls';
-import zlib from 'node:zlib';
+import zlib, { crc32 as crc32$1 } from 'node:zlib';
 import require$$5$1 from 'node:perf_hooks';
 import require$$8 from 'node:util/types';
 import require$$1$1 from 'node:worker_threads';
@@ -39,7 +39,7 @@ import 'timers';
 import * as require$$0$2 from 'stream';
 import require$$0__default, { Readable } from 'stream';
 import require$$0$d, { Buffer as Buffer$1 } from 'buffer';
-import os$1, { EOL as EOL$1, tmpdir } from 'node:os';
+import os$1, { EOL as EOL$1 } from 'node:os';
 import process$2 from 'node:process';
 import https$1 from 'node:https';
 import { createHmac } from 'node:crypto';
@@ -111883,14 +111883,14 @@ function requireArchiveOutputStream () {
 
 var zipArchiveOutputStream = {exports: {}};
 
-var crc32$1 = {};
+var crc32 = {};
 
 /*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
 
 var hasRequiredCrc32;
 
 function requireCrc32 () {
-	if (hasRequiredCrc32) return crc32$1;
+	if (hasRequiredCrc32) return crc32;
 	hasRequiredCrc32 = 1;
 	(function (exports) {
 		(function (factory) {
@@ -111996,8 +111996,8 @@ function requireCrc32 () {
 		// $FlowIgnore
 		CRC32.str = crc32_str;
 		})); 
-	} (crc32$1));
-	return crc32$1;
+	} (crc32));
+	return crc32;
 }
 
 /**
@@ -134985,108 +134985,6 @@ If the error persists, please check whether Actions and API requests are operati
     }
 }
 
-/**
- * Compute CRC32 lookup tables as described at:
- * https://github.com/komrad36/CRC#option-6-1-byte-tabular
- *
- * An iteration of CRC computation can be performed on 8 bits of input at once. By pre-computing a
- * table of the values of CRC(?) for all 2^8 = 256 possible byte values, during the final
- * computation we can replace a loop over 8 bits with a single lookup in the table.
- *
- * For further speedup, we can also pre-compute the values of CRC(?0) for all possible bytes when a
- * zero byte is appended. Then we can process two bytes of input at once by computing CRC(AB) =
- * CRC(A0) ^ CRC(B), using one lookup in the CRC(?0) table and one lookup in the CRC(?) table.
- *
- * The same technique applies for any number of bytes to be processed at once, although the speed
- * improvements diminish.
- *
- * @param polynomial The binary representation of the polynomial to use (reversed, i.e. most
- * significant bit represents x^0).
- * @param numTables The number of bytes of input that will be processed at once.
- */
-function crc32GenerateTables({ polynomial, numTables, }) {
-    const table = new Uint32Array(256 * numTables);
-    for (let i = 0; i < 256; i++) {
-        let r = i;
-        r = ((r & 1) * polynomial) ^ (r >>> 1);
-        r = ((r & 1) * polynomial) ^ (r >>> 1);
-        r = ((r & 1) * polynomial) ^ (r >>> 1);
-        r = ((r & 1) * polynomial) ^ (r >>> 1);
-        r = ((r & 1) * polynomial) ^ (r >>> 1);
-        r = ((r & 1) * polynomial) ^ (r >>> 1);
-        r = ((r & 1) * polynomial) ^ (r >>> 1);
-        r = ((r & 1) * polynomial) ^ (r >>> 1);
-        table[i] = r;
-    }
-    for (let i = 256; i < table.length; i++) {
-        const value = table[i - 256];
-        table[i] = table[value & 0xff] ^ (value >>> 8);
-    }
-    return table;
-}
-const CRC32_TABLE = crc32GenerateTables({ polynomial: 0xedb88320, numTables: 8 });
-/**
- * Initialize a CRC32 to all 1 bits.
- */
-function crc32Init() {
-    return -1;
-}
-/**
- * Update a streaming CRC32 calculation.
- *
- * For performance, this implementation processes the data 8 bytes at a time, using the algorithm
- * presented at: https://github.com/komrad36/CRC#option-9-8-byte-tabular
- */
-function crc32Update(prev, data) {
-    const byteLength = data.byteLength;
-    const view = new DataView(data.buffer, data.byteOffset, byteLength);
-    let r = prev;
-    let offset = 0;
-    // Process bytes one by one until we reach 4-byte alignment, which will speed up uint32 access.
-    const toAlign = -view.byteOffset & 3;
-    for (; offset < toAlign && offset < byteLength; offset++) {
-        r = CRC32_TABLE[(r ^ view.getUint8(offset)) & 0xff] ^ (r >>> 8);
-    }
-    if (offset === byteLength) {
-        return r;
-    }
-    offset = toAlign;
-    // Process 8 bytes (2 uint32s) at a time.
-    let remainingBytes = byteLength - offset;
-    for (; remainingBytes >= 8; offset += 8, remainingBytes -= 8) {
-        r ^= view.getUint32(offset, true);
-        const r2 = view.getUint32(offset + 4, true);
-        r =
-            CRC32_TABLE[0 * 256 + ((r2 >>> 24) & 0xff)] ^
-                CRC32_TABLE[1 * 256 + ((r2 >>> 16) & 0xff)] ^
-                CRC32_TABLE[2 * 256 + ((r2 >>> 8) & 0xff)] ^
-                CRC32_TABLE[3 * 256 + ((r2 >>> 0) & 0xff)] ^
-                CRC32_TABLE[4 * 256 + ((r >>> 24) & 0xff)] ^
-                CRC32_TABLE[5 * 256 + ((r >>> 16) & 0xff)] ^
-                CRC32_TABLE[6 * 256 + ((r >>> 8) & 0xff)] ^
-                CRC32_TABLE[7 * 256 + ((r >>> 0) & 0xff)];
-    }
-    // Process any remaining bytes one by one. (Perf note: inexplicably, using a temporary variable
-    // `i` rather than reusing `offset` here is faster in V8.)
-    for (let i = offset; i < byteLength; i++) {
-        r = CRC32_TABLE[(r ^ view.getUint8(i)) & 0xff] ^ (r >>> 8);
-    }
-    return r;
-}
-/**
- * Finalize a CRC32 by inverting the output value. An unsigned right-shift of 0 is used to ensure the result is a positive number.
- */
-function crc32Final(prev) {
-    return (prev ^ -1) >>> 0;
-}
-/**
- * Calculate a one-shot CRC32. If the data is being accumulated incrementally, use the functions
- * `crc32Init`, `crc32Update`, and `crc32Final` instead.
- */
-function crc32(data) {
-    return crc32Final(crc32Update(crc32Init(), data));
-}
-
 const balanced = (a, b, str) => {
     const ma = a instanceof RegExp ? maybeMatch(a, str) : a;
     const mb = b instanceof RegExp ? maybeMatch(b, str) : b;
@@ -138164,15 +138062,12 @@ async function UploadFile(name, paths) {
  *
  * @param fp File path
  */
-async function calc_details(fp) {
+async function calc_crc32(fp) {
     // Thanks to https://stackoverflow.com/a/76978551
     const handler = await fs$1.open(fp, 'r');
-    const { buffer, bytesRead } = await handler.read();
+    const { buffer } = await handler.read();
     await handler.close();
-    return {
-        checksum: crc32(buffer),
-        size: bytesRead
-    };
+    return crc32$1(buffer);
 }
 /**
  * Iterate through all files and delete what is unnecessary
@@ -138208,9 +138103,9 @@ async function clean_iterate(root, fp, blacklist) {
         }
         else {
             let file_path_out = file_path.replace(root, "");
-            let { checksum, size } = await calc_details(file_path);
+            let checksum = await calc_crc32(file_path);
             await whitelist_file.write(`${file_path_out}|${checksum}\n`);
-            await sizelist_file.write(`${file_path_out}|${size}\n`);
+            await sizelist_file.write(`${file_path_out}|${stats.size}\n`);
         }
     }
 }
@@ -138233,7 +138128,7 @@ async function run() {
         sizelist_file = await fs$1.open("skunkcrafts_updater_sizeslist.txt", "w");
         // Load input folder and determine output folder
         const input_folder = getInput("acf-in-name"); // TODO: this input should probably be sanitized
-        let output_folder = await fs$1.mkdtemp(join(tmpdir(), 'output-'));
+        let output_folder = await fs$1.mkdtemp('output-');
         // Iterate through files untile done and close whitelist & sizelist files
         await clean_iterate(input_folder, input_folder, blacklist);
         await whitelist_file.close();
@@ -138242,7 +138137,7 @@ async function run() {
         fileMove("skunkcrafts_updater_sizeslist.txt", `${output_folder}/skunkcrafts_updater_sizeslist.txt`);
         fileMove("skunkcrafts_updater_whitelist.txt", `${output_folder}/skunkcrafts_updater_whitelist.txt`);
         // Upload files as artifacts
-        await UploadFile(`${input_folder}.zip`, [
+        await UploadFile(input_folder, [
             input_folder
         ]);
         await UploadFile('Server manifest files', [

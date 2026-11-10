@@ -20,7 +20,6 @@ import {DefaultArtifactClient} from "@actions/artifact";
 import {crc32} from "node:zlib";
 import * as fs from "node:fs/promises";
 import {join} from 'node:path';
-import {tmpdir} from 'node:os';
 import {minimatch} from 'minimatch';
 import {fileMove} from './helpers.js';
 
